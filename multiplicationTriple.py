@@ -35,3 +35,7 @@ class MultiplicationTriple:
         :return: A list of tuples containing the shares of a, b, and c.
         """
         return list(zip(self.a_shares, self.b_shares, self.c_shares))
+    
+    # Testing if I can edit the repo
+    def foo():
+        print('Hello world')
