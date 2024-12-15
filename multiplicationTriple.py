@@ -36,6 +36,22 @@ class MultiplicationTriple:
         """
         return list(zip(self.a_shares, self.b_shares, self.c_shares))
     
-    # Testing if I can edit the repo
-    def foo():
-        print('Hello world')
+
+"""
+According to page 8 of MZ17, I deduce that matrix U has dimensions n x d, where n must be the number of samples and d must be the number of features. 
+I can also deduce that the matrix V has d rows, but number of columns is unknown.
+A |B| x d submatrix of U is defined and called A, where |B| is the number of batches for stochastic gradient descent.
+Finally, the paper aims to find the shares of C = A x B. A, B and C are equivalent to the triples u,v and w from BeDOZa respectively.
+
+There are two ways to compute the multiplication triples which MZ17 calls the offline phase: linear homomorphic encryption or oblivious transfer.
+"""
+
+"""
+Linear homomorphic encryption
+1. Generate random U and random V
+2. Take a submatrix A out of U (random???)
+3. Take a column B (Bad naming, but this is how MZ17 names them) out of V (random???)
+4. Compute C such that C = [A]_0 x [B]_0 + [A]_0 x [B]_1 + [A]_1 x [B]_0 + [A]_1 x [B]_1
+"""
+
+
