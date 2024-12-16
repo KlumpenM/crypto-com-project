@@ -75,7 +75,7 @@ def mult_triples(n, d, t, l):
     n : int
         Number of rows/data samples
     d : int
-        Number of columns/
+        Number of columns/features
     t : int
         Number of mini-batches
     l : int
@@ -87,13 +87,15 @@ def mult_triples(n, d, t, l):
         the shared triplets [U], [V], [Z], [V'], [Z']
     """
 
-    # Generate the random matrices U and V
+    batch_size = int(np.floor(n / t))
+
+    # Generate the random matrices U, V and V_prime
     U = np.random.randint(2^l - 1, size=(n, d))
     print(f'U: \n {U}')
     V = np.random.randint(2^l - 1, size=(d, t))
     print(f'V: \n {V}')
+    V_prime = np.random.randint(2^l - 1, size=(batch_size, t))
 
-    batch_size = int(np.floor(n / t))
     print(f'Mini-batch size: {batch_size}')
 
     print(U[0:batch_size,:].shape)
@@ -102,10 +104,21 @@ def mult_triples(n, d, t, l):
     Z = U[0:batch_size,:] @ V[:,0:1]
     print(Z.shape)
     print(Z)
+
+    Z_prime = U[0:batch_size,:].transpose() @ V_prime[:,0:1]
+
     # Iterate over t mini-batches to compute Z and Z'
     for i in range(1, t):
-        U_B_i = U[i*batch_size:i*batch_size+batch_size,]
+        U_B_i = U[i*batch_size:i*batch_size+batch_size,]    # |B| x d
         print(f'Submatrix of U: \n {U_B_i}')
-        Z = np.hstack((Z, U_B_i @ V[:,i:i+1]))
+        V_i = V[:,i:i+1]                                    # d x t
+        Z = np.hstack((Z, U_B_i @ V_i))                     # |B| x t
+
+        U_B_i_T = U_B_i.transpose()                         # d x |B|
+        V_prime_i = V_prime[:,0:1]                          # |B| x t
+        Z_prime = np.hstack((Z_prime, U_B_i_T @ V_prime_i)) # d x t
+
     print(f'Shape of Z: {Z.shape}')
     print(f'Z: \n {Z}')
+    print(f'Shape of Z\': {Z_prime.shape}')
+    print(f'Z\': \n {Z_prime}')
