@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 class MultiplicationTriple:
     def __init__(self, num_parties, bit_width) -> None:
@@ -66,7 +67,7 @@ Linear homomorphic encryption
 7. Remaining terms are computed locally without communication between parties.
 """
 
-def mult_triples(n, d, t):
+def mult_triples(n, d, t, l):
     """ Computes the multiplication triplets
     
     Parameters
@@ -77,6 +78,8 @@ def mult_triples(n, d, t):
         Number of columns/
     t : int
         Number of mini-batches
+    l : int
+        Bit length
 
     Returns
     -------
@@ -84,3 +87,8 @@ def mult_triples(n, d, t):
         the shared triplets [U], [V], [Z], [V'], [Z']
     """
 
+    U = np.random.randint(2^l - 1, size=(n, d))
+    print(f'U: \n {U}')
+    V = np.random.randint(2^l - 1, size=(d, t))
+    print(f'V: \n {V}')
+    
