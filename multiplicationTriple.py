@@ -91,13 +91,21 @@ def mult_triples(n, d, t, l):
     U = np.random.randint(2^l - 1, size=(n, d))
     print(f'U: \n {U}')
     V = np.random.randint(2^l - 1, size=(d, t))
+    print(f'V: \n {V}')
 
     batch_size = int(np.floor(n / t))
     print(f'Mini-batch size: {batch_size}')
 
-    Z = np.empty((n,t))
+    print(U[0:batch_size,:].shape)
+    print(V[:,0].shape)
+
+    Z = U[0:batch_size,:] @ V[:,0:1]
+    print(Z.shape)
+    print(Z)
     # Iterate over t mini-batches to compute Z and Z'
     for i in range(1, t):
         U_B_i = U[i*batch_size:i*batch_size+batch_size,]
         print(f'Submatrix of U: \n {U_B_i}')
-    
+        Z = np.hstack((Z, U_B_i @ V[:,i:i+1]))
+    print(f'Shape of Z: {Z.shape}')
+    print(f'Z: \n {Z}')
