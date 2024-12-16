@@ -87,8 +87,17 @@ def mult_triples(n, d, t, l):
         the shared triplets [U], [V], [Z], [V'], [Z']
     """
 
+    # Generate the random matrices U and V
     U = np.random.randint(2^l - 1, size=(n, d))
     print(f'U: \n {U}')
     V = np.random.randint(2^l - 1, size=(d, t))
-    print(f'V: \n {V}')
+
+    batch_size = int(np.floor(n / t))
+    print(f'Mini-batch size: {batch_size}')
+
+    Z = np.empty((n,t))
+    # Iterate over t mini-batches to compute Z and Z'
+    for i in range(0, n, batch_size):
+        U_B_i = U[i:i+batch_size,]
+        print(f'Submatrix of U: \n {U_B_i}')
     
