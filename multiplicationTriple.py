@@ -97,7 +97,7 @@ def mult_triples(n, d, t, l):
 
     Z = np.empty((n,t))
     # Iterate over t mini-batches to compute Z and Z'
-    for i in range(0, n, batch_size):
-        U_B_i = U[i:i+batch_size,]
+    for i in range(1, t):
+        U_B_i = U[i*batch_size:i*batch_size+batch_size,]
         print(f'Submatrix of U: \n {U_B_i}')
     
