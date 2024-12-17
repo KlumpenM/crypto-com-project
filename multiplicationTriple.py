@@ -1,5 +1,6 @@
 import random
 import numpy as np
+from Cryptodome.Util import number
 
 class MultiplicationTriple:
     def __init__(self, num_parties, bit_width) -> None:
@@ -200,6 +201,7 @@ def paillier_keygen(l):
     """
 
 
+
     pass
 
 # TODO
@@ -231,7 +233,9 @@ def paillier_enc(m, pk):
         else:
             return rand_r()
     
-    return np.mod((1 + m*pk) * r**pk, N**2)
+    r = rand_r()
+
+    return np.mod((1 + m*pk) * r**pk, pk**2)
 
 
 
