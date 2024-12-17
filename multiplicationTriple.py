@@ -200,7 +200,12 @@ def paillier_keygen(l):
     Public and secret key pair as tuple
     """
     
+    p = number.getPrime(l)
+    q = number.getPrime(l)
 
+    pk = p * q
+
+    # TODO: Use Chinese Remainde Theorem to find sk
 
     pass
 
