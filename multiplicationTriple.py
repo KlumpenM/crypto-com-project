@@ -149,7 +149,9 @@ def share_matrix(M, l):
     r, c = M.shape
     print(2**l - 1)
     M0 = np.random.randint(2**l - 1, size=(r, c))
-    M1 = np.mod(M, M0)
+    M1 = np.subtract(M, M0)
+    divisor = np.full(shape=(r, c), fill_value=2**l - 1)
+    M1 = np.mod(M1, divisor)
 
     return M0, M1
 
