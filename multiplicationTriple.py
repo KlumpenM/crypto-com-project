@@ -128,6 +128,14 @@ def mult_triples(n, d, t, l):
     among the parties.
     """
     # TODO: Compute the shares of the triplets
+    U0, U1 = share_matrix(U, l)
+    V0, V1 = share_matrix(V, l)
+    Vp0, Vp1 = share_matrix(V_prime, l)
+
+    # The shares of Z and Z' are to be computed per column just as how MZ17 describes under section B. The Offline Phase in page 8
+    # TODO: insert either algorithm for LHE-based gen or OT-based gen
+
+
 
 def share_matrix(M, l):
     """ Computes the secret shares of a matrix. Not sure if it should be defined here or somewhere else like the dealer for instance.
@@ -155,4 +163,98 @@ def share_matrix(M, l):
 
     return M0, M1
 
+# TODO
+def LHE_MT(A, B):
+    """ Based on MZ17 figure 12, the Offline Protocol based on Lineary Homomorphic Encryption
 
+    Parameters
+    ----------
+    A : 2darray
+        A matrix share from one party
+    B : 2darray
+        A matrix share from the other party
+    
+    Returns
+    -------
+    A tuple of the shares of the product A x B
+    """
+
+    # TODO: Implement Paillier encryption scheme... Or maybe even d-HE scheme, since we have done before in an assignment.
+    #       But the paper refers to Pailler as an example.
+
+    
+    pass
+
+# TODO
+def paillier_keygen(l):
+    """ Generates the public and secret keys for the Paillier Cryptoscheme
+    
+    Parameters
+    ----------
+    l : int
+        Bit length of keys
+
+    Returns
+    -------
+    Public and secret key pair as tuple
+    """
+
+
+    pass
+
+# TODO
+def paillier_enc(m, pk):
+    """ The encryption scheme of Paillier. In context of MZ17, used to encrypt each element of a matrix.
+
+    Parameters
+    ----------
+    m : int
+        The input message/element
+    pk : int
+        The public key for encryption
+
+    Returns
+    -------
+    The encryption of m
+    """
+
+    def rand_r():
+        """ Helper function to sample a random r in Z*_N
+
+        Returns
+        -------
+        Random r in Z*_N
+        """
+        r = np.random.randint(1, pk)
+        if coprime(r, pk):
+            return r
+        else:
+            return rand_r()
+    
+    return np.mod((1 + m*pk) * r**pk, N**2)
+
+
+
+# Python3 program to check if two 
+# numbers are co-prime or not
+
+# Recursive function to
+# return gcd of a and b
+def __gcd(a, b):
+
+    # Everything divides 0 
+    if (a == 0 or b == 0): return 0
+    
+    # base case
+    if (a == b): return a
+    
+    # a is greater
+    if (a > b): 
+        return __gcd(a - b, b)
+            
+    return __gcd(a, b - a)
+
+# Function to check and print if 
+# two numbers are co-prime or not 
+def coprime(a, b):
+    return __gcd(a, b) == 1
