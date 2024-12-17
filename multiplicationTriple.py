@@ -90,11 +90,11 @@ def mult_triples(n, d, t, l):
     batch_size = int(np.floor(n / t))
 
     # Generate the random matrices U, V and V_prime
-    U = np.random.randint(2^l - 1, size=(n, d))
+    U = np.random.randint(2**l - 1, size=(n, d))
     print(f'U: \n {U}')
-    V = np.random.randint(2^l - 1, size=(d, t))
+    V = np.random.randint(2**l - 1, size=(d, t))
     print(f'V: \n {V}')
-    V_prime = np.random.randint(2^l - 1, size=(batch_size, t))
+    V_prime = np.random.randint(2**l - 1, size=(batch_size, t))
 
     print(f'Mini-batch size: {batch_size}')
 
@@ -122,3 +122,35 @@ def mult_triples(n, d, t, l):
     print(f'Z: \n {Z}')
     print(f'Shape of Z\': {Z_prime.shape}')
     print(f'Z\': \n {Z_prime}')
+
+    """
+    We now have the actual triplets used for multiplication, but we need to define the secret shares of U, V, Z, V' and Z' and distribute them
+    among the parties.
+    """
+    # TODO: Compute the shares of the triplets
+
+def share_matrix(M, l):
+    """ Computes the secret shares of a matrix. Not sure if it should be defined here or somewhere else like the dealer for instance.
+    
+    Parameters
+    ----------
+    M : 2darray
+        The matrix to secret share
+    l : int
+        Bit length to define the group Z_(2^l) which we sample from when computing the secret share
+        
+    Returns
+    -------
+    Tuple of matrices of same shape as M, also being the secret shares of M
+    """
+
+    print(f'l: {l}')
+
+    r, c = M.shape
+    print(2**l - 1)
+    M0 = np.random.randint(2**l - 1, size=(r, c))
+    M1 = np.mod(M, M0)
+
+    return M0, M1
+
+
