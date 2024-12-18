@@ -1,6 +1,7 @@
 import random
 import numpy as np
-from Cryptodome.Util import number
+from Crypto.Util import number
+
 
 class MultiplicationTriple:
     def __init__(self, num_parties, bit_width) -> None:
@@ -206,6 +207,7 @@ def paillier_keygen(l):
     pk = p * q
 
     # TODO: Use Chinese Remainde Theorem to find sk
+
 
     pass
 
