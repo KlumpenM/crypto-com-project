@@ -93,27 +93,28 @@ def mult_triples(n, d, t, l):
     batch_size = int(np.floor(n / t))
 
     # Generate the random matrices U, V and V_prime
-    U = np.random.randint(2**l - 1, size=(n, d))
-    print(f'U: \n {U}')
-    V = np.random.randint(2**l - 1, size=(d, t))
-    print(f'V: \n {V}')
-    V_prime = np.random.randint(2**l - 1, size=(batch_size, t))
+    # The upperbound of each element is (2**(l-1))/3 because that is the limit of what Paillier can encrypt.
+    U = np.random.randint((2**(l-1))/3, size=(n, d))
+    #print(f'U: \n {U}')
+    V = np.random.randint((2**(l-1))/3, size=(d, t))
+    #print(f'V: \n {V}')
+    V_prime = np.random.randint((2**(l-1))/3, size=(batch_size, t))
 
-    print(f'Mini-batch size: {batch_size}')
+    #print(f'Mini-batch size: {batch_size}')
 
-    print(U[0:batch_size,:].shape)
-    print(V[:,0].shape)
+    #print(U[0:batch_size,:].shape)
+    #print(V[:,0].shape)
 
     Z = U[0:batch_size,:] @ V[:,0:1]
-    print(Z.shape)
-    print(Z)
+    #print(Z.shape)
+    #print(Z)
 
     Z_prime = U[0:batch_size,:].transpose() @ V_prime[:,0:1]
 
     # Iterate over t mini-batches to compute Z and Z'
     for i in range(1, t):
         U_B_i = U[i*batch_size:i*batch_size+batch_size,]    # |B| x d
-        print(f'Submatrix of U: \n {U_B_i}')
+        #print(f'Submatrix of U: \n {U_B_i}')
         V_i = V[:,i:i+1]                                    # d x t
         Z = np.hstack((Z, U_B_i @ V_i))                     # |B| x t
 
@@ -121,10 +122,10 @@ def mult_triples(n, d, t, l):
         V_prime_i = V_prime[:,0:1]                          # |B| x t
         Z_prime = np.hstack((Z_prime, U_B_i_T @ V_prime_i)) # d x t
 
-    print(f'Shape of Z: {Z.shape}')
-    print(f'Z: \n {Z}')
-    print(f'Shape of Z\': {Z_prime.shape}')
-    print(f'Z\': \n {Z_prime}')
+    #print(f'Shape of Z: {Z.shape}')
+    #print(f'Z: \n {Z}')
+    #print(f'Shape of Z\': {Z_prime.shape}')
+    #print(f'Z\': \n {Z_prime}')
 
     """
     We now have the actual triplets used for multiplication, but we need to define the secret shares of U, V, Z, V' and Z' and distribute them
@@ -139,7 +140,7 @@ def mult_triples(n, d, t, l):
     # TODO: insert either algorithm for LHE-based gen or OT-based gen
 
     # Generate the keys of Paillier Cryptosystem
-    pk, sk = paillier.generate_paillier_keypair()
+    pk, sk = paillier.generate_paillier_keypair(n_length=l)
 
     A0 = U0[0:batch_size,:]
     B1 = V1[:,0:1]
@@ -148,6 +149,8 @@ def mult_triples(n, d, t, l):
     A1 = U1[0:batch_size,:]
     B0 = V0[:,0:1]
     AB1 = LHE_MT(A1, B0, l, key=(pk, sk))
+
+    # TODO: Now repeat the above for the remaining columns
 
 
 
@@ -167,13 +170,13 @@ def share_matrix(M, l):
     Tuple of matrices of same shape as M, also being the secret shares of M
     """
 
-    print(f'l: {l}')
+    #print(f'l: {l}')
 
     r, c = M.shape
-    print(2**l - 1)
-    M0 = np.random.randint(2**l - 1, size=(r, c))
+    #print(2**l - 1)
+    M0 = np.random.randint((2**(l-1))/3, size=(r, c))
     M1 = np.subtract(M, M0)
-    divisor = np.full(shape=(r, c), fill_value=2**l - 1)
+    divisor = np.full(shape=(r, c), fill_value=(2**(l-1))/3)
     M1 = np.mod(M1, divisor)
 
     return M0, M1
@@ -197,7 +200,7 @@ def LHE_MT(A, B, l, keys=None):
     """
 
     if keys == None:
-        pk, sk = paillier.generate_paillier_keypair()
+        pk, sk = paillier.generate_paillier_keypair(n_length=l)
     else:
         pk, sk = keys
 
@@ -207,30 +210,37 @@ def LHE_MT(A, B, l, keys=None):
     # Step 1
     enc_B = np.empty(shape=B.shape)
     for i in range(B.shape[0]):
-        enc_Bi = pk.encrypt(int(B[i,0]))
+        #print(B[i,0])
+        enc_Bi = pk.encrypt(int(B[i,0]))    
+        # Encryption output is an EncryptedNumber object. We would rather work with the actual value it represents
+        #   which is accessed via EncryptedNumber.ciphertext(). Thus we may perform operations on the ciphertext.
         print(f'enc_Bi: {enc_Bi}')
-        enc_B[i,0] = enc_Bi
+        enc_B[i,0] = enc_Bi.ciphertext()
     
     # Step 2
     C = np.empty(shape=(A.shape[0], 1))
     r = np.empty(shape=(A.shape[0], 1))
     for i in range(A.shape[0]):
-        r[i] = np.random.randint(0, 2**l)
+        r[i] = np.random.randint(0, (2**(l-1))/3)
     for i in range(A.shape[0]):
         prod = 1
         for j in range(B.shape[0]):
             prod *= enc_B[j]**A[i,j]
-        C[i] = prod * pk.encrypt(r[i])
+            print(f'prod: {prod}')
+        C[i] = prod * pk.encrypt(int(r[i])).ciphertext()
     
     # Step 3
     r = r * -1
-    divisor = np.full(shape=r.shape, fill_value=2**l - 1)
+    divisor = np.full(shape=r.shape, fill_value=2**l)
     AB0 = np.mod(r, divisor)
 
     # Step 4
     AB1 = np.empty(shape=C.shape)
     for i in range(C.shape[0]):
-        AB1[i] = sk.decrypt(C[i])
+        new_var = C[i,0]
+        print(new_var)
+        encrypted_number = paillier.EncryptedNumber(pk, new_var)
+        AB1[i] = sk.decrypt(encrypted_number)
 
     return AB0, AB1
 

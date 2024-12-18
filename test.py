@@ -2,7 +2,7 @@ import multiplicationTriple
 import numpy as np
 
 def test_mult_triple_gen():
-    multiplicationTriple.mult_triples(8, 3, 4, 32)
+    multiplicationTriple.mult_triples(8, 3, 4, 1024)
 
 def test_share_matrix():
     m = np.array([[1, 2],
