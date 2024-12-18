@@ -1,6 +1,7 @@
 import random
 import numpy as np
 from Crypto.Util import number
+from phe import paillier
 
 
 class MultiplicationTriple:
@@ -137,6 +138,12 @@ def mult_triples(n, d, t, l):
     # The shares of Z and Z' are to be computed per column just as how MZ17 describes under section B. The Offline Phase in page 8
     # TODO: insert either algorithm for LHE-based gen or OT-based gen
 
+    # Generate the keys of Paillier Cryptosystem
+    pk, sk = paillier.generate_paillier_keypair()
+
+    A0 = U0[0:batch_size,:]
+    B1 = V1[:,0:1]
+
 
 
 def share_matrix(M, l):
@@ -166,28 +173,60 @@ def share_matrix(M, l):
     return M0, M1
 
 # TODO
-def LHE_MT(A, B):
+def LHE_MT(A, B, l, keys=None):
     """ Based on MZ17 figure 12, the Offline Protocol based on Lineary Homomorphic Encryption
 
     Parameters
     ----------
     A : 2darray
-        A matrix share from one party
+        A |B| x d matrix share from one party
     B : 2darray
-        A matrix share from the other party
+        A d x 1 matrix share from the other party
+    l : int
+        Bit length
     
     Returns
     -------
     A tuple of the shares of the product A x B
     """
 
+    if keys == None:
+        pk, sk = paillier.generate_paillier_keypair()
+    else:
+        pk, sk = keys
+
     # TODO: Implement Paillier encryption scheme... Or maybe even d-HE scheme, since we have done before in an assignment.
     #       But the paper refers to Pailler as an example.
-
     
-    pass
+    # Step 1
+    enc_B = np.empty(shape=B.shape)
+    for i in range(B.shape[0]):
+        enc_B[i] = pk.encrypt(B[i])
+    
+    # Step 2
+    C = np.empty(shape=(A.shape[0], 1))
+    r = np.empty(shape=(A.shape[0], 1))
+    for i in range(A.shape[0]):
+        r[i] = np.random.randint(0, 2**l)
+    for i in range(A.shape[0]):
+        prod = 1
+        for j in range(B.shape[0]):
+            prod *= enc_B[j]**A[i,j]
+        C[i] = prod * pk.encrypt(r[i])
+    
+    # Step 3
+    r = r * -1
+    divisor = np.full(shape=r.shape, fill_value=2**l - 1)
+    AB0 = np.mod(r, divisor)
 
-# TODO
+    # Step 4
+    AB1 = np.empty(shape=C.shape)
+    for i in range(C.shape[0]):
+        AB1[i] = sk.decrypt(C[i])
+
+    return AB0, AB1
+
+# Deprecated: use the phe Python package instead
 def paillier_keygen(l):
     """ Generates the public and secret keys for the Paillier Cryptoscheme
     
@@ -207,11 +246,9 @@ def paillier_keygen(l):
     pk = p * q
 
     # TODO: Use Chinese Remainde Theorem to find sk
-
-
     pass
 
-# TODO
+# Deprecated: use the phe Python package instead
 def paillier_enc(m, pk):
     """ The encryption scheme of Paillier. In context of MZ17, used to encrypt each element of a matrix.
 
