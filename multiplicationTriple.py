@@ -143,6 +143,12 @@ def mult_triples(n, d, t, l):
 
     A0 = U0[0:batch_size,:]
     B1 = V1[:,0:1]
+    AB0 = LHE_MT(A0, B1, l, keys=(pk, sk))
+
+    A1 = U1[0:batch_size,:]
+    B0 = V0[:,0:1]
+    AB1 = LHE_MT(A1, B0, l, key=(pk, sk))
+
 
 
 
@@ -201,7 +207,9 @@ def LHE_MT(A, B, l, keys=None):
     # Step 1
     enc_B = np.empty(shape=B.shape)
     for i in range(B.shape[0]):
-        enc_B[i] = pk.encrypt(B[i])
+        enc_Bi = pk.encrypt(int(B[i,0]))
+        print(f'enc_Bi: {enc_Bi}')
+        enc_B[i,0] = enc_Bi
     
     # Step 2
     C = np.empty(shape=(A.shape[0], 1))
