@@ -3,6 +3,7 @@ import numpy as np
 from Crypto.Util import number
 from phe import paillier
 from sympy import mod_inverse
+import secrets
 
 
 class MultiplicationTriple:
@@ -248,7 +249,7 @@ def LHE_MT(A, B, l, keys=None):
 
     return AB0, AB1
 
-# Deprecated: use the phe Python package instead
+
 def paillier_keygen(l):
     """ Generates the public and secret keys for the Paillier Cryptoscheme
     
@@ -274,7 +275,7 @@ def paillier_keygen(l):
 
     return pk, sk
 
-# Deprecated: use the phe Python package instead
+
 def paillier_enc(m, pk):
     """ The encryption scheme of Paillier. In context of MZ17, used to encrypt each element of a matrix.
 
@@ -297,16 +298,38 @@ def paillier_enc(m, pk):
         -------
         Random r in Z*_N
         """
-        r = np.random.randint(1, pk)
+        r = secrets.randbits(pk)
         if coprime(r, pk):
             return r
         else:
             return rand_r()
     
     r = rand_r()
-
+    print('Found random coprime')
     return np.mod((1 + m*pk) * r**pk, pk**2)
 
+
+
+def paillier_dec(c, pk, sk):
+    """ The decryption scheme for Paillier.
+    
+    Parameters
+    ----------
+    c : int
+        The ciphertext
+    pk : int
+        The public key
+    sk : int
+        The secret key
+    
+    Returns
+    -------
+    The plaintext
+    """
+
+    foo = np.mod(c**sk, pk**2)
+    alpha = np.mod(1 + foo * pk, pk**2)
+    return mod_inverse(alpha, pk)
 
 
 # Python3 program to check if two 

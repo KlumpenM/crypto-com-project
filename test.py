@@ -1,6 +1,7 @@
 import multiplicationTriple
 import numpy as np
 from phe import paillier
+import secrets
 
 def test_mult_triple_gen():
     multiplicationTriple.mult_triples(8, 3, 4, 32)
@@ -24,7 +25,21 @@ def test_paillier_keygen():
     print(f'pk: {pk}')
     print(f'sk: {sk}')
 
+def test_paillier_cryptosystem():
+    key_len = 2048
+    print('Generating keys')
+    pk, sk = multiplicationTriple.paillier_keygen(key_len)
+    print('Keys are generated')
+    message = secrets.randbits(key_len)
+    print('Random message chosen')
+    ciphertext = multiplicationTriple.paillier_enc(message, pk)
+    print('Ciphertext computed')
+    message1 = multiplicationTriple.paillier_dec(ciphertext, pk, sk)
+    print('Plaintext computed')
+    assert message == message1
+
 if __name__ == "__main__":
     #test_mult_triple_gen()
     #test_share_matrix()
-    test_paillier_keygen()
+    #test_paillier_keygen()
+    test_paillier_cryptosystem()
