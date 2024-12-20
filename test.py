@@ -1,8 +1,9 @@
 import multiplicationTriple
 import numpy as np
+from phe import paillier
 
 def test_mult_triple_gen():
-    multiplicationTriple.mult_triples(8, 3, 4, 1024)
+    multiplicationTriple.mult_triples(8, 3, 4, 32)
 
 def test_share_matrix():
     m = np.array([[1, 2],
@@ -18,6 +19,12 @@ def test_share_matrix():
     print(f'm_prime: \n {m_prime}')
     assert (m == m_prime).all()
 
+def test_paillier_keygen():
+    pk, sk = multiplicationTriple.paillier_keygen(2048)
+    print(f'pk: {pk}')
+    print(f'sk: {sk}')
+
 if __name__ == "__main__":
-    test_mult_triple_gen()
-    test_share_matrix()
+    #test_mult_triple_gen()
+    #test_share_matrix()
+    test_paillier_keygen()

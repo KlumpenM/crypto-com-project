@@ -2,6 +2,7 @@ import random
 import numpy as np
 from Crypto.Util import number
 from phe import paillier
+from sympy import mod_inverse
 
 
 class MultiplicationTriple:
@@ -94,11 +95,11 @@ def mult_triples(n, d, t, l):
 
     # Generate the random matrices U, V and V_prime
     # The upperbound of each element is (2**(l-1))/3 because that is the limit of what Paillier can encrypt.
-    U = np.random.randint((2**(l-1))/3, size=(n, d))
+    U = np.random.randint(2**l, size=(n, d))
     #print(f'U: \n {U}')
-    V = np.random.randint((2**(l-1))/3, size=(d, t))
+    V = np.random.randint(2**l, size=(d, t))
     #print(f'V: \n {V}')
-    V_prime = np.random.randint((2**(l-1))/3, size=(batch_size, t))
+    V_prime = np.random.randint(2**l, size=(batch_size, t))
 
     #print(f'Mini-batch size: {batch_size}')
 
@@ -140,7 +141,7 @@ def mult_triples(n, d, t, l):
     # TODO: insert either algorithm for LHE-based gen or OT-based gen
 
     # Generate the keys of Paillier Cryptosystem
-    pk, sk = paillier.generate_paillier_keypair(n_length=l)
+    pk, sk = paillier.generate_paillier_keypair()
 
     A0 = U0[0:batch_size,:]
     B1 = V1[:,0:1]
@@ -174,9 +175,9 @@ def share_matrix(M, l):
 
     r, c = M.shape
     #print(2**l - 1)
-    M0 = np.random.randint((2**(l-1))/3, size=(r, c))
+    M0 = np.random.randint(2**l, size=(r, c))
     M1 = np.subtract(M, M0)
-    divisor = np.full(shape=(r, c), fill_value=(2**(l-1))/3)
+    divisor = np.full(shape=(r, c), fill_value=2**l)
     M1 = np.mod(M1, divisor)
 
     return M0, M1
@@ -208,14 +209,14 @@ def LHE_MT(A, B, l, keys=None):
     #       But the paper refers to Pailler as an example.
     
     # Step 1
-    enc_B = np.empty(shape=B.shape)
+    enc_B = []
     for i in range(B.shape[0]):
         #print(B[i,0])
         enc_Bi = pk.encrypt(int(B[i,0]))    
         # Encryption output is an EncryptedNumber object. We would rather work with the actual value it represents
         #   which is accessed via EncryptedNumber.ciphertext(). Thus we may perform operations on the ciphertext.
         print(f'enc_Bi: {enc_Bi}')
-        enc_B[i,0] = enc_Bi.ciphertext()
+        enc_B.append(enc_Bi)
     
     # Step 2
     C = np.empty(shape=(A.shape[0], 1))
@@ -225,7 +226,10 @@ def LHE_MT(A, B, l, keys=None):
     for i in range(A.shape[0]):
         prod = 1
         for j in range(B.shape[0]):
-            prod *= enc_B[j]**A[i,j]
+            print(f'enc_B[j]: {enc_B[j]}')
+            print(f'A[i,j]: {A[i,j].dtype}')
+            for _ in range(A[i,j]):
+                prod *= enc_B[j]
             print(f'prod: {prod}')
         C[i] = prod * pk.encrypt(int(r[i])).ciphertext()
     
@@ -264,7 +268,11 @@ def paillier_keygen(l):
     pk = p * q
 
     # TODO: Use Chinese Remainde Theorem to find sk
-    pass
+    remainders = [0, 1]
+    moduli = [(p-1)*(q-1), pk]
+    sk, _ = solve_crt(remainders, moduli)
+
+    return pk, sk
 
 # Deprecated: use the phe Python package instead
 def paillier_enc(m, pk):
@@ -324,3 +332,29 @@ def __gcd(a, b):
 # two numbers are co-prime or not 
 def coprime(a, b):
     return __gcd(a, b) == 1
+
+
+def solve_crt(remainders, moduli):
+    """
+    Solve a system of congruences using the Chinese Remainder Theorem.
+    
+    x ≡ remainders[i] (mod moduli[i]) for all i
+    
+    :param remainders: List of remainders [r1, r2, ...]
+    :param moduli: List of moduli [m1, m2, ...]
+    :return: The solution x and the combined modulus
+    """
+    if len(remainders) != len(moduli):
+        raise ValueError("Remainders and moduli must have the same length.")
+    
+    x = 0
+    M = 1
+    for m in moduli:
+        M *= m  # Compute the product of all moduli
+    
+    for r, m in zip(remainders, moduli):
+        Mi = M // m  # Partial modulus
+        Mi_inverse = mod_inverse(Mi, m)  # Modular inverse of Mi mod m
+        x += r * Mi * Mi_inverse  # Contribution to the solution
+    
+    return x % M, M
