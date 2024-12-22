@@ -26,7 +26,7 @@ def test_paillier_keygen():
     print(f'sk: {sk}')
 
 def test_paillier_cryptosystem():
-    key_len = 1024
+    key_len = 2048
     print('Generating keys')
     pk, sk = multiplicationTriple.paillier_keygen(key_len)
     print('Keys are generated')
