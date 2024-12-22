@@ -329,10 +329,19 @@ def paillier_dec(c, pk, sk):
     -------
     The plaintext
     """
-
+    # Step 1: Compute c^sk mod pk^2
     c_sk = pow(c, sk, pk**2)
-    alpha = (1 + c_sk * pk) % pk**2
-    return pow(alpha, -1, pk)
+
+    # Step 2: Compute L function: L(x) = (x - 1) // pk
+    L_c_sk = (c_sk - 1) // pk
+
+    # Step 3: Compute the modular inverse of sk mod pk
+    sk_inv = pow(sk, -1, pk)
+
+    # Step 4: Recover plaintext
+    m = (L_c_sk * sk_inv) % pk
+
+    return m
 
 
 # Python3 program to check if two 
