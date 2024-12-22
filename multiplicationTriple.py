@@ -85,7 +85,7 @@ def mult_triples(n, d, t, l):
     t : int
         Number of mini-batches
     l : int
-        Bit length
+        Bit length of the elements in the matrices
 
     Returns
     -------
@@ -143,7 +143,7 @@ def mult_triples(n, d, t, l):
     # TODO: insert either algorithm for LHE-based gen or OT-based gen
 
     # Generate the keys of Paillier Cryptosystem
-    pk, sk = paillier.generate_paillier_keypair()
+    pk, sk = paillier_keygen(2048)
 
     A0 = U0[0:batch_size,:]
     B1 = V1[:,0:1]
@@ -203,7 +203,7 @@ def LHE_MT(A, B, l, keys=None):
     """
 
     if keys == None:
-        pk, sk = paillier.generate_paillier_keypair(n_length=l)
+        pk, sk = paillier_keygen(2048)
     else:
         pk, sk = keys
 
@@ -214,9 +214,7 @@ def LHE_MT(A, B, l, keys=None):
     enc_B = []
     for i in range(B.shape[0]):
         #print(B[i,0])
-        enc_Bi = pk.encrypt(int(B[i,0]))    
-        # Encryption output is an EncryptedNumber object. We would rather work with the actual value it represents
-        #   which is accessed via EncryptedNumber.ciphertext(). Thus we may perform operations on the ciphertext.
+        enc_Bi = paillier_enc(B[i,0], pk)    
         print(f'enc_Bi: {enc_Bi}')
         enc_B.append(enc_Bi)
     
@@ -233,7 +231,7 @@ def LHE_MT(A, B, l, keys=None):
             for _ in range(A[i,j]):
                 prod *= enc_B[j]
             print(f'prod: {prod}')
-        C[i] = prod * pk.encrypt(int(r[i])).ciphertext()
+        C[i] = prod * paillier_enc(r[i], pk)
     
     # Step 3
     r = r * -1
@@ -243,10 +241,8 @@ def LHE_MT(A, B, l, keys=None):
     # Step 4
     AB1 = np.empty(shape=C.shape)
     for i in range(C.shape[0]):
-        new_var = C[i,0]
-        print(new_var)
-        encrypted_number = paillier.EncryptedNumber(pk, new_var)
-        AB1[i] = sk.decrypt(encrypted_number)
+        
+        AB1[i] = paillier_dec(C[i,0], pk, sk)
 
     return AB0, AB1
 
@@ -269,7 +265,7 @@ def paillier_keygen(l):
 
     pk = p * q
 
-    # TODO: Use Chinese Remainde Theorem to find sk
+    # Use Chinese Remainder Theorem to find sk
     remainders = [0, 1]
     moduli = [(p-1)*(q-1), pk]
     sk, _ = solve_crt(remainders, moduli)

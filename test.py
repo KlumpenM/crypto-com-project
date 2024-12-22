@@ -4,7 +4,7 @@ from phe import paillier
 import secrets
 
 def test_mult_triple_gen():
-    multiplicationTriple.mult_triples(8, 3, 4, 32)
+    multiplicationTriple.mult_triples(8, 3, 4, 16)
 
 def test_share_matrix():
     m = np.array([[1, 2],
@@ -39,7 +39,7 @@ def test_paillier_cryptosystem():
     assert message == message1, f'message: {message} \n message1: {message1}'
 
 if __name__ == "__main__":
-    #test_mult_triple_gen()
+    test_mult_triple_gen()
     #test_share_matrix()
     #test_paillier_keygen()
-    test_paillier_cryptosystem()
+    #test_paillier_cryptosystem()
