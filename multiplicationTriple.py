@@ -96,12 +96,11 @@ def mult_triples(n, d, t, l):
     batch_size = int(np.floor(n / t))
 
     # Generate the random matrices U, V and V_prime
-    # The upperbound of each element is (2**(l-1))/3 because that is the limit of what Paillier can encrypt.
-    U = np.random.randint(2**l, size=(n, d))
+    U = np.random.randint(low=2**l, high=None, size=(n, d))
     #print(f'U: \n {U}')
-    V = np.random.randint(2**l, size=(d, t))
+    V = np.random.randint(low=2**l, high=None, size=(d, t))
     #print(f'V: \n {V}')
-    V_prime = np.random.randint(2**l, size=(batch_size, t))
+    V_prime = np.random.randint(low=2**l, high=None, size=(batch_size, t))
 
     #print(f'Mini-batch size: {batch_size}')
 
@@ -177,7 +176,7 @@ def share_matrix(M, l):
 
     r, c = M.shape
     #print(2**l - 1)
-    M0 = np.random.randint(2**l, size=(r, c))
+    M0 = np.random.randint(low=2**l, high=None, size=(r, c))
     M1 = np.subtract(M, M0)
     divisor = np.full(shape=(r, c), fill_value=2**l)
     M1 = np.mod(M1, divisor)
@@ -302,7 +301,7 @@ def paillier_enc(m, pk):
     
     r = rand_r()
     print('Found random coprime')
-    alpha = (1 + m*pk) % pk**2
+    alpha = (1 + (m % pk**2) * (pk % pk**2)) % pk**2
     beta = pow(r, pk, pk**2)
     ciphertext = (alpha * beta) % pk**2
     return ciphertext
