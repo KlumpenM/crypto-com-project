@@ -5,6 +5,7 @@ from phe import paillier
 from sympy import mod_inverse
 import secrets
 import math
+import gmpy2
 
 
 class MultiplicationTriple:
@@ -150,7 +151,7 @@ def mult_triples(n, d, t, l):
 
     A1 = U1[0:batch_size,:]
     B0 = V0[:,0:1]
-    AB1 = LHE_MT(A1, B0, l, key=(pk, sk))
+    AB1 = LHE_MT(A1, B0, l, keys=(pk, sk))
 
     # TODO: Now repeat the above for the remaining columns
 
@@ -210,38 +211,43 @@ def LHE_MT(A, B, l, keys=None):
     #       But the paper refers to Pailler as an example.
     
     # Step 1
+    print('LHE_MT step 1')
     enc_B = []
     for i in range(B.shape[0]):
         #print(B[i,0])
         enc_Bi = paillier_enc(B[i,0], pk)    
-        print(f'enc_Bi: {enc_Bi}')
+        #print(f'enc_Bi: {enc_Bi}')
         enc_B.append(enc_Bi)
     
     # Step 2
-    C = np.empty(shape=(A.shape[0], 1))
+    print('LHE_MT step 2')
+    C = []
     r = np.empty(shape=(A.shape[0], 1))
     for i in range(A.shape[0]):
         r[i] = np.random.randint(0, (2**(l-1))/3)
     for i in range(A.shape[0]):
         prod = 1
         for j in range(B.shape[0]):
-            print(f'enc_B[j]: {enc_B[j]}')
-            print(f'A[i,j]: {A[i,j].dtype}')
-            for _ in range(A[i,j]):
-                prod *= enc_B[j]
-            print(f'prod: {prod}')
-        C[i] = prod * paillier_enc(r[i], pk)
+            #print(f'enc_B[j]: {enc_B[j]}')
+            #print(f'A[i,j]: {A[i,j].dtype}')
+            print(f'j = {j}')
+            for _ in range(B.shape[0]):
+                prod = prod * enc_B[j]
+            #print(f'prod: {prod}')
+        C.append(prod * paillier_enc(r[i], pk))
     
     # Step 3
+    print('LHE_MT step 3')
     r = r * -1
     divisor = np.full(shape=r.shape, fill_value=2**l)
     AB0 = np.mod(r, divisor)
 
     # Step 4
-    AB1 = np.empty(shape=C.shape)
-    for i in range(C.shape[0]):
+    print('LHE_MT step 4')
+    AB1 = np.empty(shape=(len(C),1))
+    for i in range(len(C)):
         
-        AB1[i] = paillier_dec(C[i,0], pk, sk)
+        AB1[i] = paillier_dec(C[i], pk, sk)
 
     return AB0, AB1
 
@@ -301,7 +307,10 @@ def paillier_enc(m, pk):
     
     r = rand_r()
     print('Found random coprime')
-    alpha = (1 + (m % pk**2) * (pk % pk**2)) % pk**2
+
+    m = gmpy2.mpz(m)
+    pk = gmpy2.mpz(pk)
+    alpha = (1 + m*pk) % pk**2
     beta = pow(r, pk, pk**2)
     ciphertext = (alpha * beta) % pk**2
     return ciphertext
