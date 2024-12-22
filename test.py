@@ -26,7 +26,7 @@ def test_paillier_keygen():
     print(f'sk: {sk}')
 
 def test_paillier_cryptosystem():
-    key_len = 2048
+    key_len = 1024
     print('Generating keys')
     pk, sk = multiplicationTriple.paillier_keygen(key_len)
     print('Keys are generated')
@@ -36,7 +36,7 @@ def test_paillier_cryptosystem():
     print('Ciphertext computed')
     message1 = multiplicationTriple.paillier_dec(ciphertext, pk, sk)
     print('Plaintext computed')
-    assert message == message1
+    assert message == message1, f'message: {message} \n message1: {message1}'
 
 if __name__ == "__main__":
     #test_mult_triple_gen()

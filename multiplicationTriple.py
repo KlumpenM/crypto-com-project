@@ -4,6 +4,7 @@ from Crypto.Util import number
 from phe import paillier
 from sympy import mod_inverse
 import secrets
+import math
 
 
 class MultiplicationTriple:
@@ -298,15 +299,17 @@ def paillier_enc(m, pk):
         -------
         Random r in Z*_N
         """
-        r = secrets.randbits(pk)
-        if coprime(r, pk):
-            return r
-        else:
-            return rand_r()
+        while True:
+            r = secrets.randbelow(pk - 1) + 1
+            if math.gcd(r, pk) == 1:
+                return r
     
     r = rand_r()
     print('Found random coprime')
-    return np.mod((1 + m*pk) * r**pk, pk**2)
+    alpha = (1 + m*pk) % pk**2
+    beta = pow(r, pk, pk**2)
+    ciphertext = (alpha * beta) % pk**2
+    return ciphertext
 
 
 
@@ -327,9 +330,9 @@ def paillier_dec(c, pk, sk):
     The plaintext
     """
 
-    foo = np.mod(c**sk, pk**2)
-    alpha = np.mod(1 + foo * pk, pk**2)
-    return mod_inverse(alpha, pk)
+    c_sk = pow(c, sk, pk**2)
+    alpha = (1 + c_sk * pk) % pk**2
+    return pow(alpha, -1, pk)
 
 
 # Python3 program to check if two 
