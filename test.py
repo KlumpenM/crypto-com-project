@@ -38,6 +38,12 @@ def test_paillier_cryptosystem():
     print('Plaintext computed')
     assert message == message1, f'message: {message} \n message1: {message1}'
 
+def numpy_sucks():
+    b = np.ones((10,))
+    print(f'b shape: {b.shape}')
+    new_b = b.reshape(-1,1)
+    print(f'b new shape: {new_b.shape}')
+
 if __name__ == "__main__":
     test_mult_triple_gen()
     #test_share_matrix()

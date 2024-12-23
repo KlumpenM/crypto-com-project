@@ -147,13 +147,38 @@ def mult_triples(n, d, t, l):
 
     A0 = U0[0:batch_size,:]
     B1 = V1[:,0:1]
-    AB0 = LHE_MT(A0, B1, l, keys=(pk, sk))
+    A0B1 = LHE_MT(A0, B1, l, keys=(pk, sk)) # Is a tuple of shares
 
     A1 = U1[0:batch_size,:]
     B0 = V0[:,0:1]
-    AB1 = LHE_MT(A1, B0, l, keys=(pk, sk))
+    A1B0 = LHE_MT(A1, B0, l, keys=(pk, sk)) # Is a tuple of shares
 
     # TODO: Now repeat the above for the remaining columns
+    for i in range(1,t):
+        A0 = U0[i*batch_size:i*batch_size+batch_size,:]
+        B1 = V1[:,i:i+1]
+        C = LHE_MT(A0, B1, l, keys=(pk, sk))
+        #print(f'A0B1[0].shape: {A0B1[0].shape}')
+        #print(f'C[0].shape: {C[0].shape}')
+        # We do the reshape because the vector is initially of shape (|B|,), but we want its shape to be (|B|,1)
+        #   Otherwise, the hstack will not work.
+        # But apparently, we do not need it after all????? Python just decided that np should stop being retarded somehow?????
+        new_var = np.hstack((A0B1[0], C[0]))
+        new_var1 = np.hstack((A0B1[1], C[1]))
+        A0B1 = (new_var, new_var1)
+
+        A1 = U1[i*batch_size:i*batch_size+batch_size,:]
+        B0 = V0[:,i:i+1]
+        C1 = LHE_MT(A1, B0, l, keys=(pk, sk))
+        new_var2 = np.hstack((A1B0[0], C1[0]))
+        new_var3 = np.hstack((A1B0[1], C1[1]))
+        A1B0 = (new_var2, new_var3)
+    
+    # At this point, we have now computed the shares of Z
+    # Next is to compute the shares of Z'
+
+    
+    
 
 
 
@@ -184,7 +209,7 @@ def share_matrix(M, l):
 
     return M0, M1
 
-# TODO
+
 def LHE_MT(A, B, l, keys=None):
     """ Based on MZ17 figure 12, the Offline Protocol based on Lineary Homomorphic Encryption
 
