@@ -122,7 +122,7 @@ def mult_triples(n, d, t, l):
         Z = np.hstack((Z, U_B_i @ V_i))                     # |B| x t
 
         U_B_i_T = U_B_i.transpose()                         # d x |B|
-        V_prime_i = V_prime[:,0:1]                          # |B| x t
+        V_prime_i = V_prime[:,i:i+1]                          # |B| x t
         Z_prime = np.hstack((Z_prime, U_B_i_T @ V_prime_i)) # d x t
 
     #print(f'Shape of Z: {Z.shape}')
@@ -134,7 +134,7 @@ def mult_triples(n, d, t, l):
     We now have the actual triplets used for multiplication, but we need to define the secret shares of U, V, Z, V' and Z' and distribute them
     among the parties.
     """
-    # TODO: Compute the shares of the triplets
+    # Compute the shares of U, V and V'
     U0, U1 = share_matrix(U, l)
     V0, V1 = share_matrix(V, l)
     Vp0, Vp1 = share_matrix(V_prime, l)
@@ -145,13 +145,14 @@ def mult_triples(n, d, t, l):
     # Generate the keys of Paillier Cryptosystem
     pk, sk = paillier_keygen(2048)
 
+    # Compute the shares of Z
     A0 = U0[0:batch_size,:]
     B1 = V1[:,0:1]
-    A0B1 = LHE_MT(A0, B1, l, keys=(pk, sk)) # Is a tuple of shares
+    A0B1 = LHE_MT(A0, B1, l, keys=(pk, sk)) # Is a tuple of shares of the product A0 x B1
 
     A1 = U1[0:batch_size,:]
     B0 = V0[:,0:1]
-    A1B0 = LHE_MT(A1, B0, l, keys=(pk, sk)) # Is a tuple of shares
+    A1B0 = LHE_MT(A1, B0, l, keys=(pk, sk)) # Is a tuple of shares of the product A1 x B0
 
     # TODO: Now repeat the above for the remaining columns
     for i in range(1,t):
@@ -177,7 +178,33 @@ def mult_triples(n, d, t, l):
     # At this point, we have now computed the shares of Z
     # Next is to compute the shares of Z'
 
+    A0 = U0[0:batch_size].transpose()
+    B1 = Vp1[:,0:1]
+    A0B1 = LHE_MT(A0, B1, l, keys=(pk, sk)) # Is a tuple of shares of the product A0 x B1
+
+    A1 = U1[0:batch_size,:].transpose()
+    B0 = Vp0[:,0:1]
+    A1B0 = LHE_MT(A1, B0, l, keys=(pk, sk)) # Is a tuple of shares of the product A1 x B0
+
+    for i in range(1,t):
+        A0 = U0[i*batch_size:i*batch_size+batch_size,:].transpose()
+        B1 = Vp1[:,i:i+1]
+        C = LHE_MT(A0, B1, l, keys=(pk, sk))
+
+        new_var = np.hstack((A0B1[0], C[0]))
+        new_var1 = np.hstack((A0B1[1], C[1]))
+        A0B1 = (new_var, new_var1)
+
+        A1 = U1[i*batch_size:i*batch_size+batch_size,:].transpose()
+        B0 = Vp0[:,i:i+1]
+        C1 = LHE_MT(A1, B0, l, keys=(pk, sk))
+
+        new_var2 = np.hstack((A1B0[0], C1[0]))
+        new_var3 = np.hstack((A1B0[1], C1[1]))
+        A1B0 = (new_var2, new_var3)
     
+    # By now, the shares of Z' has been computed
+
     
 
 
