@@ -225,10 +225,27 @@ def mult_triples(n, d, t, l):
     print(f'U x B: {(U0[0:batch_size,:] @ V0[:,0:1]).shape}')
     print(f'A0B1[0].shape: {A0B1[0].shape}')
 
+    # TODO: Remember that shape of Z is actually |B| x t
     result = A0 @ B0 + (A0B1[0] + A0B1[1]) + (A1B0[0] + A1B0[1]) + A1 @ B1
     divisor = np.full(shape=result.shape, fill_value=2**l)
     result = np.mod(result, divisor)
-    print(f'result: {result}\n Z: {Z}')
+
+    other_result = (U0 + U1) @ (V0 + V1)
+    divisor = np.full(shape=other_result.shape, fill_value=2**l)
+    other_result = np.mod(other_result, divisor)
+
+    print(f'other_result.shape: {other_result.shape}')
+    print(f'Z.shape: {Z.shape}')
+    print(f'result.shape: {result.shape}')
+
+    #assert other_result.shape == Z.shape
+    #assert (other_result == Z).all()
+
+    #assert result.shape == other_result.shape
+    #assert (result == other_result).all()
+
+    print(f'result: {result}\
+          \n Z: {Z}')
     assert result.shape == Z.shape
     assert (result == Z).all()
 

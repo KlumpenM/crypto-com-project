@@ -54,8 +54,8 @@ def matrix_sanity_check():
     assert (A @ B == np.dot(A, B)).all()
 
 if __name__ == "__main__":
-    #test_mult_triple_gen()
-    test_share_matrix()
+    test_mult_triple_gen()
+    #test_share_matrix()
     #test_paillier_keygen()
     #test_paillier_cryptosystem()
-    matrix_sanity_check()
+    #matrix_sanity_check()
