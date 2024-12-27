@@ -119,11 +119,19 @@ def mult_triples(n, d, t, l):
         U_B_i = U[i*batch_size:i*batch_size+batch_size,]    # |B| x d
         #print(f'Submatrix of U: \n {U_B_i}')
         V_i = V[:,i:i+1]                                    # d x t
-        Z = np.hstack((Z, U_B_i @ V_i))                     # |B| x t
+        prod0 = U_B_i @ V_i
+        Z = np.hstack((Z, prod0))                     # |B| x t
 
         U_B_i_T = U_B_i.transpose()                         # d x |B|
         V_prime_i = V_prime[:,i:i+1]                          # |B| x t
-        Z_prime = np.hstack((Z_prime, U_B_i_T @ V_prime_i)) # d x t
+        prod1 = U_B_i_T @ V_prime_i
+        Z_prime = np.hstack((Z_prime, prod1)) # d x t
+
+    divisor = np.full(shape=Z.shape, fill_value=2**l)
+    Z = np.mod(Z, divisor)
+
+    divisor = np.full(shape=Z_prime.shape, fill_value=2**l)
+    Z_prime = np.mod(Z_prime, divisor)
 
     #print(f'Shape of Z: {Z.shape}')
     #print(f'Z: \n {Z}')
@@ -218,7 +226,10 @@ def mult_triples(n, d, t, l):
     print(f'A0B1[0].shape: {A0B1[0].shape}')
 
     result = A0 @ B0 + (A0B1[0] + A0B1[1]) + (A1B0[0] + A1B0[1]) + A1 @ B1
+    divisor = np.full(shape=result.shape, fill_value=2**l)
+    result = np.mod(result, divisor)
     print(f'result: {result}\n Z: {Z}')
+    assert result.shape == Z.shape
     assert (result == Z).all()
 
 

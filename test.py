@@ -44,8 +44,18 @@ def numpy_sucks():
     new_b = b.reshape(-1,1)
     print(f'b new shape: {new_b.shape}')
 
+def matrix_sanity_check():
+    A = np.array([[1, 2],
+                  [3, 4],
+                  [5,6]])
+    B = np.array([[1, 2, 3, 4],
+                  [5, 6, 7, 8]])
+    
+    assert (A @ B == np.dot(A, B)).all()
+
 if __name__ == "__main__":
-    test_mult_triple_gen()
+    #test_mult_triple_gen()
     #test_share_matrix()
     #test_paillier_keygen()
     #test_paillier_cryptosystem()
+    matrix_sanity_check()
