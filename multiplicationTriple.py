@@ -165,16 +165,16 @@ def mult_triples(n, d, t, l):
         # We do the reshape because the vector is initially of shape (|B|,), but we want its shape to be (|B|,1)
         #   Otherwise, the hstack will not work.
         # But apparently, we do not need it after all????? Python just decided that np should stop being retarded somehow?????
-        new_var = np.hstack((A0B1[0], C[0]))
-        new_var1 = np.hstack((A0B1[1], C[1]))
-        A0B1 = (new_var, new_var1)
+        new_var = np.hstack((A0B1[0], C[0])) # The first secret share of the product A0 x B1
+        new_var1 = np.hstack((A0B1[1], C[1])) # The second secret share of the product A0 x B1
+        A0B1 = (new_var, new_var1) # The secret shares of the product A0 x B1
 
         A1 = U1[i*batch_size:i*batch_size+batch_size,:]
         B0 = V0[:,i:i+1]
         C1 = LHE_MT(A1, B0, l, keys=(pk, sk))
-        new_var2 = np.hstack((A1B0[0], C1[0]))
-        new_var3 = np.hstack((A1B0[1], C1[1]))
-        A1B0 = (new_var2, new_var3)
+        new_var2 = np.hstack((A1B0[0], C1[0])) # The first secret share of the product A1 x B0
+        new_var3 = np.hstack((A1B0[1], C1[1])) # The second secret share of the product A1 x B0
+        A1B0 = (new_var2, new_var3) # The secret shares of the product A1 x B0
     
     # At this point, we have now computed the shares of Z
     # Next is to compute the shares of Z'
@@ -196,8 +196,8 @@ def mult_triples(n, d, t, l):
         new_var1 = np.hstack((A0B1_[1], C_[1]))
         A0B1_ = (new_var, new_var1)
 
-        A1 = U1[i*batch_size:i*batch_size+batch_size,:].transpose()
-        B0 = Vp0[:,i:i+1]
+        A1_ = U1[i*batch_size:i*batch_size+batch_size,:].transpose()
+        B0_ = Vp0[:,i:i+1]
         C1_ = LHE_MT(A1_, B0_, l, keys=(pk, sk))
 
         new_var2 = np.hstack((A1B0_[0], C1_[0]))
@@ -216,6 +216,10 @@ def mult_triples(n, d, t, l):
     assert V0.shape == V0.shape
     print(f'U x B: {(U0[0:batch_size,:] @ V0[:,0:1]).shape}')
     print(f'A0B1[0].shape: {A0B1[0].shape}')
+
+    A0 @ B0
+
+
 
     
 
