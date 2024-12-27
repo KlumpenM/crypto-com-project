@@ -260,7 +260,7 @@ def share_matrix(M, l):
     #print(2**l - 1)
     M0 = np.random.randint(low=2**l, high=None, size=(r, c))
     M1 = np.subtract(M, M0)
-    divisor = np.full(shape=(r, c), fill_value=2**l)
+    divisor = np.full(shape=(r, c), fill_value=2**l-1)
     M1 = np.mod(M1, divisor)
 
     return M0, M1

@@ -55,7 +55,7 @@ def matrix_sanity_check():
 
 if __name__ == "__main__":
     #test_mult_triple_gen()
-    #test_share_matrix()
+    test_share_matrix()
     #test_paillier_keygen()
     #test_paillier_cryptosystem()
     matrix_sanity_check()
