@@ -217,7 +217,9 @@ def mult_triples(n, d, t, l):
     print(f'U x B: {(U0[0:batch_size,:] @ V0[:,0:1]).shape}')
     print(f'A0B1[0].shape: {A0B1[0].shape}')
 
-    A0 @ B0 + (A0B1[0] + A0B1[1]) + (A1B0[0] + A1B0[1]) + A1 @ B1
+    result = A0 @ B0 + (A0B1[0] + A0B1[1]) + (A1B0[0] + A1B0[1]) + A1 @ B1
+    print(f'result: {result}\n Z: {Z}')
+    assert (result == Z).all()
 
 
 
