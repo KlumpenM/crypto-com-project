@@ -14,7 +14,7 @@ def test_share_matrix():
     print(f'm0: \n {m0}')
     print(f'm1: \n {m1}')
     m_prime = m0 + m1
-    divisor = np.full(shape=m.shape, fill_value=2**3 - 1)
+    divisor = np.full(shape=m.shape, fill_value=2**3)
     print(f'divisor: \n {divisor}')
     m_prime = np.mod(m_prime, divisor)
     print(f'm_prime: \n {m_prime}')
