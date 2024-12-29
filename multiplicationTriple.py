@@ -193,7 +193,7 @@ def mult_triples(n, d, t, l):
         A1B0 = (new_var2, new_var3) # The secret shares of the product A1 x B0
     
     # At this point, we have now computed the shares of Z
-    
+
     # Next is to compute the shares of Z'
 
     A0_ = U0[0:batch_size].transpose()
@@ -331,6 +331,8 @@ def LHE_MT(A, B, l, keys=None):
         #print(f'enc_Bi: {enc_Bi}')
         enc_B.append(enc_Bi)
     
+    assert len(enc_B) == B.shape[0]
+    
     # Step 2
     #print('LHE_MT step 2')
     C = []
@@ -338,15 +340,15 @@ def LHE_MT(A, B, l, keys=None):
     for i in range(A.shape[0]):
         r[i] = np.random.randint(0, (2**(l-1))/3)
     for i in range(A.shape[0]):
-        prod = 1
+        big_prod = []
+        # Big product sign
         for j in range(B.shape[0]):
             #print(f'enc_B[j]: {enc_B[j]}')
             #print(f'A[i,j]: {A[i,j].dtype}')
-            #print(f'j = {j}')
-            for _ in range(B.shape[0]):
-                prod = prod * enc_B[j]
+            print(f'j = {j}')
+            big_prod.append(enc_B[j]**A[i,j])
             #print(f'prod: {prod}')
-        C.append(prod * paillier_enc(r[i], pk))
+        C.append(math.prod(big_prod) * paillier_enc(r[i], pk))
     
     # Step 3
     #print('LHE_MT step 3')
@@ -357,8 +359,7 @@ def LHE_MT(A, B, l, keys=None):
     # Step 4
     #print('LHE_MT step 4')
     AB1 = np.empty(shape=(len(C),1))
-    for i in range(len(C)):
-        
+    for i in range(len(C)):        
         AB1[i] = paillier_dec(C[i], pk, sk)
 
     return AB0, AB1
