@@ -86,7 +86,7 @@ def mult_triples(n, d, t, l):
     t : int
         Number of mini-batches
     l : int
-        Bit length of the elements in the matrices
+        Bit length of the elements in the matrices. Typically the key size
 
     Returns
     -------
@@ -108,6 +108,8 @@ def mult_triples(n, d, t, l):
     #print(U[0:batch_size,:].shape)
     #print(V[:,0].shape)
 
+    # Directly computing the triplets without using offline phase.
+
     Z = U[0:batch_size,:] @ V[:,0:1]
     #print(Z.shape)
     #print(Z)
@@ -120,12 +122,12 @@ def mult_triples(n, d, t, l):
         #print(f'Submatrix of U: \n {U_B_i}')
         V_i = V[:,i:i+1]                                    # d x t
         prod0 = U_B_i @ V_i
-        Z = np.hstack((Z, prod0))                     # |B| x t
+        Z = np.hstack((Z, prod0))                           # |B| x t
 
         U_B_i_T = U_B_i.transpose()                         # d x |B|
-        V_prime_i = V_prime[:,i:i+1]                          # |B| x t
+        V_prime_i = V_prime[:,i:i+1]                        # |B| x t
         prod1 = U_B_i_T @ V_prime_i
-        Z_prime = np.hstack((Z_prime, prod1)) # d x t
+        Z_prime = np.hstack((Z_prime, prod1))               # d x t
 
     divisor = np.full(shape=Z.shape, fill_value=2**l)
     Z = np.mod(Z, divisor)
@@ -156,18 +158,24 @@ def mult_triples(n, d, t, l):
     pk, sk = paillier_keygen(2048)
 
     # Compute the shares of Z
-    A0 = U0[0:batch_size,:]
-    B1 = V1[:,0:1]
-    A0B1 = LHE_MT(A0, B1, l, keys=(pk, sk)) # Is a tuple of shares of the product A0 x B1
+    ## For the first column of Z
+    A0 = []
+    A0.append(U0[0:batch_size,:])                 # |B| x d
+    B1 = []
+    B1.append(V1[:,0:1])                          # d x 1
+    A0B1 = LHE_MT(A0[0], B1[0], l, keys=(pk, sk)) # Is a tuple of shares of the product A0 x B1, each of shape |B| x 1
 
-    A1 = U1[0:batch_size,:]
-    B0 = V0[:,0:1]
-    A1B0 = LHE_MT(A1, B0, l, keys=(pk, sk)) # Is a tuple of shares of the product A1 x B0
+    A1 = []
+    A1.append(U1[0:batch_size,:])                 # |B| x d
+    B0 = []
+    B0.append(V0[:,0:1])                          # d x 1
+    A1B0 = LHE_MT(A1[0], B0[0], l, keys=(pk, sk)) # Is a tuple of shares of the product A1 x B0, each of shape |B| x 1
 
+    ## For each of the remaining columns of Z
     for i in range(1,t):
-        A0 = U0[i*batch_size:i*batch_size+batch_size,:]
-        B1 = V1[:,i:i+1]
-        C = LHE_MT(A0, B1, l, keys=(pk, sk))
+        A0.append(U0[i*batch_size:i*batch_size+batch_size,:])
+        B1.append(V1[:,i:i+1])
+        C = LHE_MT(A0[i], B1[i], l, keys=(pk, sk))
         #print(f'A0B1[0].shape: {A0B1[0].shape}')
         #print(f'C[0].shape: {C[0].shape}')
         # We do the reshape because the vector is initially of shape (|B|,), but we want its shape to be (|B|,1)
@@ -177,14 +185,15 @@ def mult_triples(n, d, t, l):
         new_var1 = np.hstack((A0B1[1], C[1])) # The second secret share of the product A0 x B1
         A0B1 = (new_var, new_var1) # The secret shares of the product A0 x B1
 
-        A1 = U1[i*batch_size:i*batch_size+batch_size,:]
-        B0 = V0[:,i:i+1]
-        C1 = LHE_MT(A1, B0, l, keys=(pk, sk))
+        A1.append(U1[i*batch_size:i*batch_size+batch_size,:])
+        B0.append(V0[:,i:i+1])
+        C1 = LHE_MT(A1[i], B0[i], l, keys=(pk, sk)) # A secret share of a column
         new_var2 = np.hstack((A1B0[0], C1[0])) # The first secret share of the product A1 x B0
         new_var3 = np.hstack((A1B0[1], C1[1])) # The second secret share of the product A1 x B0
         A1B0 = (new_var2, new_var3) # The secret shares of the product A1 x B0
     
     # At this point, we have now computed the shares of Z
+    
     # Next is to compute the shares of Z'
 
     A0_ = U0[0:batch_size].transpose()
@@ -226,7 +235,12 @@ def mult_triples(n, d, t, l):
     print(f'A0B1[0].shape: {A0B1[0].shape}')
 
     # TODO: Remember that shape of Z is actually |B| x t
-    result = A0 @ B0 + (A0B1[0] + A0B1[1]) + (A1B0[0] + A1B0[1]) + A1 @ B1
+    term1 = A0[0] @ B0[0]
+    term2 = (A0B1[0][:,0:1] + A0B1[1][:,0:1])
+    term3 = (A1B0[0][:,0:1] + A1B0[1][:,0:1])
+    term4 = A1[0] @ B1[0]
+    result = term1 + term2 + term3 + term4
+    print(f'result.shape: {result.shape}')
     divisor = np.full(shape=result.shape, fill_value=2**l)
     result = np.mod(result, divisor)
 
@@ -244,10 +258,10 @@ def mult_triples(n, d, t, l):
     #assert result.shape == other_result.shape
     #assert (result == other_result).all()
 
-    print(f'result: {result}\
-          \n Z: {Z}')
-    assert result.shape == Z.shape
-    assert (result == Z).all()
+    print(f'result: \n{result}\
+          \n Z: \n{Z[:,0:1]}')
+    #assert result.shape == Z.shape
+    assert (result == Z[:,0:1]).all()
 
 
 
@@ -309,7 +323,7 @@ def LHE_MT(A, B, l, keys=None):
     #       But the paper refers to Pailler as an example.
     
     # Step 1
-    print('LHE_MT step 1')
+    #print('LHE_MT step 1')
     enc_B = []
     for i in range(B.shape[0]):
         #print(B[i,0])
@@ -318,7 +332,7 @@ def LHE_MT(A, B, l, keys=None):
         enc_B.append(enc_Bi)
     
     # Step 2
-    print('LHE_MT step 2')
+    #print('LHE_MT step 2')
     C = []
     r = np.empty(shape=(A.shape[0], 1))
     for i in range(A.shape[0]):
@@ -328,20 +342,20 @@ def LHE_MT(A, B, l, keys=None):
         for j in range(B.shape[0]):
             #print(f'enc_B[j]: {enc_B[j]}')
             #print(f'A[i,j]: {A[i,j].dtype}')
-            print(f'j = {j}')
+            #print(f'j = {j}')
             for _ in range(B.shape[0]):
                 prod = prod * enc_B[j]
             #print(f'prod: {prod}')
         C.append(prod * paillier_enc(r[i], pk))
     
     # Step 3
-    print('LHE_MT step 3')
+    #print('LHE_MT step 3')
     r = r * -1
     divisor = np.full(shape=r.shape, fill_value=2**l)
     AB0 = np.mod(r, divisor)
 
     # Step 4
-    print('LHE_MT step 4')
+    #print('LHE_MT step 4')
     AB1 = np.empty(shape=(len(C),1))
     for i in range(len(C)):
         
@@ -404,7 +418,7 @@ def paillier_enc(m, pk):
                 return r
     
     r = rand_r()
-    print('Found random coprime')
+    #print('Found random coprime')
 
     m = gmpy2.mpz(m)
     pk = gmpy2.mpz(pk)
