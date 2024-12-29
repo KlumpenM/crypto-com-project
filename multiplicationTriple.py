@@ -235,33 +235,31 @@ def mult_triples(n, d, t, l):
     print(f'A0B1[0].shape: {A0B1[0].shape}')
 
     # TODO: Remember that shape of Z is actually |B| x t
-    term1 = A0[0] @ B0[0]
-    term2 = (A0B1[0][:,0:1] + A0B1[1][:,0:1])
-    term3 = (A1B0[0][:,0:1] + A1B0[1][:,0:1])
-    term4 = A1[0] @ B1[0]
-    result = term1 + term2 + term3 + term4
-    print(f'result.shape: {result.shape}')
-    divisor = np.full(shape=result.shape, fill_value=2**l)
-    result = np.mod(result, divisor)
+    
 
-    other_result = (U0 + U1) @ (V0 + V1)
-    divisor = np.full(shape=other_result.shape, fill_value=2**l)
-    other_result = np.mod(other_result, divisor)
-
-    print(f'other_result.shape: {other_result.shape}')
-    print(f'Z.shape: {Z.shape}')
-    print(f'result.shape: {result.shape}')
+    #print(f'Z.shape: {Z.shape}')
+    #print(f'result.shape: {result.shape}')
 
     #assert other_result.shape == Z.shape
     #assert (other_result == Z).all()
 
-    #assert result.shape == other_result.shape
-    #assert (result == other_result).all()
+    #print(f'result: \n{result}\
+    #      \n Z: \n{Z[:,0:1]}')
+    print(f'len(A0): {len(A0)}')
+    print(f'len(A1): {len(A1)}')
+    print(f't: {t}')
+    for i in range(t):
+        print(f'Testing column {i}')
+        term1 = A0[i] @ B0[i]
+        term2 = (A0B1[0][:,i:i+1] + A0B1[1][:,i:i+1])
+        term3 = (A1B0[0][:,i:i+1] + A1B0[1][:,i:i+1])
+        term4 = A1[i] @ B1[i]
+        result = term1 + term2 + term3 + term4
+        #print(f'result.shape: {result.shape}')
+        divisor = np.full(shape=result.shape, fill_value=2**l)
+        result = np.mod(result, divisor)
 
-    print(f'result: \n{result}\
-          \n Z: \n{Z[:,0:1]}')
-    #assert result.shape == Z.shape
-    assert (result == Z[:,0:1]).all()
+        assert (result == Z[:,i:i+1]).all()
 
 
 
@@ -346,7 +344,7 @@ def LHE_MT(A, B, l, keys=None):
             #print(f'enc_B[j]: {enc_B[j]}')
             #print(f'A[i,j]: {A[i,j].dtype}')
             print(f'j = {j}')
-            big_prod.append(enc_B[j]**A[i,j])
+            big_prod.append(pow(enc_B[j], A[i,j]))
             #print(f'prod: {prod}')
         C.append(math.prod(big_prod) * paillier_enc(r[i], pk))
     
