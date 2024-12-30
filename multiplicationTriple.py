@@ -260,6 +260,29 @@ def mult_triples(n, d, t, l):
         result = np.mod(result, divisor)
 
         assert (result == Z[:,i:i+1]).all()
+    
+    # Time to define the secret shares of each column in Z
+
+    term01, term11 = share_matrix(A0[0] @ B0[0], l) # Suppose that party 0 computes the secret shares of the matrix product and sends the share of party 1 to them.
+    term02 = A0B1[0][:,0:1]
+    term03 = A1B0[0][:,0:1]
+    term04, term14 = share_matrix(A1[0] @ B1[0], l) # Suppose that party 1 computes the secret shares of the matrix product and sends the share of party 0 to them.
+
+    # Share of party 0
+    Z0 = term01 + term02 + term03 + term04 # With their share, party 0 computes the first column of Z
+
+    term12 = A0B1[1][:,0:1]
+    term13 = A1B0[1][:,0:1]
+
+    # Share of party 1
+    Z1 = term11 + term12 + term13 + term14
+
+    # Ensure that the elements are in the group
+    divisor = np.full(shape=Z0.shape, fill_value=2**l)
+    Z0 = np.mod(Z0, divisor)
+    Z1 = np.mod(Z1, divisor)
+    
+    assert (Z[:,0:1] == np.mod(Z0 + Z1, divisor)).all() # If this passes, then I may assume that it will pass as well for the remaining columns.
 
 
 
