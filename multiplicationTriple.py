@@ -143,6 +143,7 @@ def mult_triples(n, d, t, l):
     """
     We now have the actual triplets used for multiplication, but we need to define the secret shares of U, V, Z, V' and Z' and distribute them
     among the parties.
+    The Z and Z' we have just computed was not in a secure way. We will use them later to assert that the secure computation of Z and Z' is correct.
     """
     # Compute the shares of U, V and V'
     U0, U1 = share_matrix(U, l)
@@ -152,7 +153,8 @@ def mult_triples(n, d, t, l):
     # The shares of Z and Z' are to be computed per column just as how MZ17 describes under section B. The Offline Phase in page 8.
     #   When computing the secret shares of the matrix product, it is supposedly here that truncation comes into play. The resulting product
     #   must be truncated down to some bit size.
-    # TODO: insert either algorithm for LHE-based gen or OT-based gen
+    
+    # LHE-based geneneration
 
     # Generate the keys of Paillier Cryptosystem
     pk, sk = paillier_keygen(2048)
@@ -195,6 +197,7 @@ def mult_triples(n, d, t, l):
     # At this point, we have now computed the shares of Z
 
     # Next is to compute the shares of Z'
+    # TODO: Refactor the computation of [Z'] such that the intermediary computations are stored in an array.
 
     A0_ = U0[0:batch_size].transpose()
     B1_ = Vp1[:,0:1]
@@ -283,6 +286,10 @@ def mult_triples(n, d, t, l):
     Z1 = np.mod(Z1, divisor)
     
     assert (Z[:,0:1] == np.mod(Z0 + Z1, divisor)).all() # If this passes, then I may assume that it will pass as well for the remaining columns.
+
+    # TODO: Repeat the computation of the secret shares of the other columns of Z
+
+    # TODO: Output the secret shares of the arithmetic multiplication triplets.
 
 
 
