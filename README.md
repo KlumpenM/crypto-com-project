@@ -6,3 +6,9 @@ By running machine learning algortihms inside MPC, you can add privacy in variou
 - (1) Implement the arithmetic version with of BeDOZa with multiplcation triples modulo $2^k$.
 - (2) secure fixed-point arithmetic for emulating real-number arithmetic with integer operations modulo $2^k$,
 - (3) Find a suitable, MPC-friendly approximation to the sigmoid function.
+
+# Requirements
+A `requirements.txt` file is available, listing all the necessary python modules to install in order to run the project. <br>
+Create a new virtual environment via `python -m venv <enter name of your venv>`. For instance, I named mine as `myenv` <br>
+Then activate your virtual environment by entering `myenv/bin/activate` or `source myenv/bin/activate`. <br>
+To install the required packages, enter in shell `pip install -r requirements.txt`.
