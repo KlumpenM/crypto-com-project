@@ -10,5 +10,5 @@ By running machine learning algortihms inside MPC, you can add privacy in variou
 # Requirements
 A `requirements.txt` file is available, listing all the necessary python modules to install in order to run the project. <br>
 Create a new virtual environment via `python -m venv <enter name of your venv>`. For instance, I named mine as `myenv` <br>
-Then activate your virtual environment by entering `myenv/bin/activate` or `source myenv/bin/activate`. <br>
+Then activate your virtual environment by entering `myenv/Scripts/activate.ps1` on Windows (you might have to change execution policy by entering `Set-ExecutionPolicy RemoteSigned` in Powershell as administrator. Thus you can run locally created scripts. Downloaded scripts still need signatures to be run) or `source myenv/bin/activate` on Linux. <br>
 To install the required packages, enter in shell `pip install -r requirements.txt`.
