@@ -288,8 +288,30 @@ def mult_triples(n, d, t, l):
     assert (Z[:,0:1] == np.mod(Z0 + Z1, divisor)).all() # If this passes, then I may assume that it will pass as well for the remaining columns.
 
     # TODO: Repeat the computation of the secret shares of the other columns of Z
+    for i in range(1,t):
+        term01, term11 = share_matrix(A0[i] @ B0[i], l)
+        term02 = A0B1[0][:,i:i+1]
+        term03 = A1B0[0][:,i:i+1]
+        term04, term14 = share_matrix(A1[i] @ B1[i], l)
+        term12 = A0B1[1][:,i:i+1]
+        term13 = A1B0[1][:,i:i+1]
+        Z0_col = term01 + term02 + term03 + term04
+        Z1_col = term11 + term12 + term13 + term14
+        Z0_col = np.mod(Z0_col, divisor)
+        Z1_col = np.mod(Z1_col, divisor)
+        Z0 = np.hstack((Z0, Z0_col))
+        Z1 = np.hstack((Z1, Z1_col))
+
+    # Check if the whole matrix is correct
+    divisor = np.full(shape=Z.shape, fill_value=2**l)
+    assert (Z == np.mod(Z0 + Z1, divisor)).all()
+    print('Shares of Z computed successfully')
+
+    # TODO: Compute the shares of Z'
 
     # TODO: Output the secret shares of the arithmetic multiplication triplets.
+    #       Update: Add the shares of V' and Z'.
+    return (U0, U1, V0, V1, Z0, Z1)
 
 
 
