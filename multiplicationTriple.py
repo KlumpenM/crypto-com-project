@@ -297,10 +297,47 @@ def mult_triples(n, d, t, l):
     print('Shares of Z computed successfully')
 
     # TODO: Compute the shares of Z'
+    term01_, term11_ = share_matrix(A0_[0] @ B0_[0], l)
+    term02_ = A0B1_[0][:,0:1]
+    term03_ = A1B0_[0][:,0:1]
+    term04_, term14_ = share_matrix(A1_[0] @ B1_[0], l)
+
+    # Share of party 0
+    Z0_ = term01_ + term02_ + term03_ + term04_
+
+    term12_ = A0B1_[1][:,0:1]
+    term13_ = A1B0_[1][:,0:1]
+
+    # Share of party 1
+    Z1_ = term11_ + term12_ + term13_ + term14_
+
+    # Ensure the elements are in the group
+    divisor = np.full(shape=Z0_.shape, fill_value=2**l)
+    Z0_ = np.mod(Z0_, divisor)
+    Z1_ = np.mod(Z1_, divisor)
+
+    for i in range(1,t):
+        term01_, term11_ = share_matrix(A0_[i] @ B0_[i], l)
+        term02_ = A0B1_[0][:,i:i+1]
+        term03_ = A1B0_[0][:,i:i+1]
+        term04_, term14_ = share_matrix(A1_[i] @ B1_[i], l)
+        term12_ = A0B1_[1][:,i:i+1]
+        term13_ = A1B0_[1][:,i:i+1]
+        Z0_col_ = term01_ + term02_ + term03_ + term04_
+        Z1_col_ = term11_ + term12_ + term13_ + term14_
+        Z0_col_ = np.mod(Z0_col_, divisor)
+        Z1_col_ = np.mod(Z1_col_, divisor)
+        Z0_ = np.hstack((Z0_, Z0_col_))
+        Z1_ = np.hstack((Z1_, Z1_col_))
+
+    # Check if the whole matrix is correct
+    divisor = np.full(shape=Z_prime.shape, fill_value=2**l)
+    assert (Z_prime == np.mod(Z0_ + Z1_, divisor)).all()
+    print('Shares of Z\' computed successfully')
 
     # TODO: Output the secret shares of the arithmetic multiplication triplets.
     #       Update: Add the shares of V' and Z'.
-    return (U0, U1, V0, V1, Z0, Z1)
+    return (U0, U1, V0, V1, Z0, Z1, Vp0, Vp1, Z0_, Z1_)
 
 
 
