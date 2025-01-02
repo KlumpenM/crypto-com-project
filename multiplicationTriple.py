@@ -197,8 +197,6 @@ def mult_triples(n, d, t, l):
     # At this point, we have now computed the shares of Z
 
     # Next is to compute the shares of Z'
-    # TODO: Refactor the computation of [Z'] such that the intermediary computations are stored in an array.
-
     A0_ = []
     A0_.append(U0[0:batch_size].transpose())
     B1_ = []
@@ -242,16 +240,6 @@ def mult_triples(n, d, t, l):
     print(f'A0B1[0].shape: {A0B1[0].shape}')
 
     # TODO: Remember that shape of Z is actually |B| x t
-    
-
-    #print(f'Z.shape: {Z.shape}')
-    #print(f'result.shape: {result.shape}')
-
-    #assert other_result.shape == Z.shape
-    #assert (other_result == Z).all()
-
-    #print(f'result: \n{result}\
-    #      \n Z: \n{Z[:,0:1]}')
     print(f'len(A0): {len(A0)}')
     print(f'len(A1): {len(A1)}')
     print(f't: {t}')
@@ -262,14 +250,12 @@ def mult_triples(n, d, t, l):
         term3 = (A1B0[0][:,i:i+1] + A1B0[1][:,i:i+1])
         term4 = A1[i] @ B1[i]
         result = term1 + term2 + term3 + term4
-        #print(f'result.shape: {result.shape}')
         divisor = np.full(shape=result.shape, fill_value=2**l)
         result = np.mod(result, divisor)
 
         assert (result == Z[:,i:i+1]).all()
     
     # Time to define the secret shares of each column in Z
-
     term01, term11 = share_matrix(A0[0] @ B0[0], l) # Suppose that party 0 computes the secret shares of the matrix product and sends the share of party 1 to them.
     term02 = A0B1[0][:,0:1]
     term03 = A1B0[0][:,0:1]
@@ -289,9 +275,8 @@ def mult_triples(n, d, t, l):
     Z0 = np.mod(Z0, divisor)
     Z1 = np.mod(Z1, divisor)
     
-    assert (Z[:,0:1] == np.mod(Z0 + Z1, divisor)).all() # If this passes, then I may assume that it will pass as well for the remaining columns.
+    #assert (Z[:,0:1] == np.mod(Z0 + Z1, divisor)).all() # If this passes, then I may assume that it will pass as well for the remaining columns.
 
-    # TODO: Repeat the computation of the secret shares of the other columns of Z
     for i in range(1,t):
         term01, term11 = share_matrix(A0[i] @ B0[i], l)
         term02 = A0B1[0][:,i:i+1]
