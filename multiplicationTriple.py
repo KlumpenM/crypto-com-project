@@ -199,26 +199,30 @@ def mult_triples(n, d, t, l):
     # Next is to compute the shares of Z'
     # TODO: Refactor the computation of [Z'] such that the intermediary computations are stored in an array.
 
-    A0_ = U0[0:batch_size].transpose()
-    B1_ = Vp1[:,0:1]
-    A0B1_ = LHE_MT(A0_, B1_, l, keys=(pk, sk)) # Is a tuple of shares of the product A0 x B1
+    A0_ = []
+    A0_.append(U0[0:batch_size].transpose())
+    B1_ = []
+    B1_.append(Vp1[:,0:1])
+    A0B1_ = LHE_MT(A0_[0], B1_[0], l, keys=(pk, sk)) # Is a tuple of shares of the product A0 x B1
 
-    A1_ = U1[0:batch_size,:].transpose()
-    B0_ = Vp0[:,0:1]
-    A1B0_ = LHE_MT(A1_, B0_, l, keys=(pk, sk)) # Is a tuple of shares of the product A1 x B0
+    A1_ = []
+    A1_.append(U1[0:batch_size,:].transpose())
+    B0_ = []
+    B0_.append(Vp0[:,0:1])
+    A1B0_ = LHE_MT(A1_[0], B0_[0], l, keys=(pk, sk)) # Is a tuple of shares of the product A1 x B0
 
     for i in range(1,t):
-        A0_ = U0[i*batch_size:i*batch_size+batch_size,:].transpose()
-        B1_ = Vp1[:,i:i+1]
-        C_ = LHE_MT(A0_, B1_, l, keys=(pk, sk))
+        A0_.append(U0[i*batch_size:i*batch_size+batch_size,:].transpose())
+        B1_.append(Vp1[:,i:i+1])
+        C_ = LHE_MT(A0_[i], B1_[i], l, keys=(pk, sk))
 
         new_var = np.hstack((A0B1_[0], C_[0]))
         new_var1 = np.hstack((A0B1_[1], C_[1]))
         A0B1_ = (new_var, new_var1)
 
-        A1_ = U1[i*batch_size:i*batch_size+batch_size,:].transpose()
-        B0_ = Vp0[:,i:i+1]
-        C1_ = LHE_MT(A1_, B0_, l, keys=(pk, sk))
+        A1_.append(U1[i*batch_size:i*batch_size+batch_size,:].transpose())
+        B0_.append(Vp0[:,i:i+1])
+        C1_ = LHE_MT(A1_[i], B0_[i], l, keys=(pk, sk))
 
         new_var2 = np.hstack((A1B0_[0], C1_[0]))
         new_var3 = np.hstack((A1B0_[1], C1_[1]))
