@@ -178,8 +178,6 @@ def mult_triples(n, d, t, l):
         A0.append(U0[i*batch_size:i*batch_size+batch_size,:])
         B1.append(V1[:,i:i+1])
         C = LHE_MT(A0[i], B1[i], l, keys=(pk, sk))
-        #print(f'A0B1[0].shape: {A0B1[0].shape}')
-        #print(f'C[0].shape: {C[0].shape}')
         # We do the reshape because the vector is initially of shape (|B|,), but we want its shape to be (|B|,1)
         #   Otherwise, the hstack will not work.
         # But apparently, we do not need it after all????? Python just decided that np should stop being retarded somehow?????
@@ -335,19 +333,11 @@ def mult_triples(n, d, t, l):
     assert (Z_prime == np.mod(Z0_ + Z1_, divisor)).all()
     print('Shares of Z\' computed successfully')
 
-    # TODO: Output the secret shares of the arithmetic multiplication triplets.
-    #       Update: Add the shares of V' and Z'.
+    # Output the secret shares of the arithmetic multiplication triplets.
     return (U0, U1, V0, V1, Z0, Z1, Vp0, Vp1, Z0_, Z1_)
 
-
-
-    
-
-
-
-
 def share_matrix(M, l):
-    """ Computes the secret shares of a matrix. Not sure if it should be defined here or somewhere else like the dealer for instance.
+    """ Computes the secret shares of a matrix.
     
     Parameters
     ----------
@@ -360,11 +350,7 @@ def share_matrix(M, l):
     -------
     Tuple of matrices of same shape as M, also being the secret shares of M
     """
-
-    #print(f'l: {l}')
-
     r, c = M.shape
-    #print(2**l - 1)
     M0 = np.random.randint(low=2**l, high=None, size=(r, c))
     M1 = np.subtract(M, M0)
     divisor = np.full(shape=(r, c), fill_value=2**l)
