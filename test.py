@@ -63,10 +63,24 @@ def test_simple_fixed_point_mult():
     print(z)
     print(x * y)
 
+def test_fixed_point_mult_plot_over_bitlen():
+    l = np.arange(1, 21)
+    x = 1.25
+    y = 2.5
+    z = np.zeros(shape=l.shape)
+    for i in range(len(l)):
+        z[i] = fixed_point_mult(x, y, l[i])
+    
+    # See how fixed point multiplication errs from the normal multiplication.
+    error = z - np.full(shape=z.shape, fill_value=x * y)
+    plt.plot(l, error)
+    plt.show()
+
 if __name__ == "__main__":
     #test_mult_triple_gen()
     #test_share_matrix()
     #test_paillier_keygen()
     #test_paillier_cryptosystem()
     #matrix_sanity_check()
-    test_simple_fixed_point_mult()
+    #test_simple_fixed_point_mult()
+    test_fixed_point_mult_plot_over_bitlen()
