@@ -1,3 +1,5 @@
+from fixed_point_arithmetic import fixed_point_mult
+import matplotlib.pyplot as plt
 import multiplicationTriple
 import numpy as np
 from phe import paillier
@@ -53,9 +55,18 @@ def matrix_sanity_check():
     
     assert (A @ B == np.dot(A, B)).all()
 
+def test_simple_fixed_point_mult():
+    x = 1.25
+    y = 2.5
+    l = 2
+    z = fixed_point_mult(x, y, l)
+    print(z)
+    print(x * y)
+
 if __name__ == "__main__":
-    test_mult_triple_gen()
+    #test_mult_triple_gen()
     #test_share_matrix()
     #test_paillier_keygen()
     #test_paillier_cryptosystem()
     #matrix_sanity_check()
+    test_simple_fixed_point_mult()
