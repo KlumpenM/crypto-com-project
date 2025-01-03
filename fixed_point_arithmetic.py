@@ -16,5 +16,7 @@ def fixed_point_mult(x, y, l):
 
     # TODO: Perform multiplication on the scaled numbers
 
-    # TODO: Truncate the resulting product and return
+    # TODO: Truncate the resulting product
+
+    # TODO: Convert the number back to decimal/float and return
     pass
