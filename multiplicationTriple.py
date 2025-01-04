@@ -74,7 +74,7 @@ Linear homomorphic encryption
 7. Remaining terms are computed locally without communication between parties.
 """
 
-def mult_triples(n, d, t, l):
+def mult_triples(n, d, t, l, batch_size=None):
     """ Computes the multiplication triplets
     
     Parameters
@@ -94,7 +94,8 @@ def mult_triples(n, d, t, l):
         the shared triplets [U], [V], [Z], [V'], [Z']
     """
 
-    batch_size = int(np.floor(n / t))
+    if batch_size == None:
+        batch_size = int(np.floor(n / t))
 
     # Generate the random matrices U, V and V_prime
     U = np.random.randint(low=2**l, high=None, size=(n, d))
