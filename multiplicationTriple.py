@@ -99,28 +99,17 @@ def mult_triples(n, d, t, l, batch_size=None):
 
     # Generate the random matrices U, V and V_prime
     U = np.random.randint(low=2**l, high=None, size=(n, d))
-    #print(f'U: \n {U}')
     V = np.random.randint(low=2**l, high=None, size=(d, t))
-    #print(f'V: \n {V}')
     V_prime = np.random.randint(low=2**l, high=None, size=(batch_size, t))
-
-    #print(f'Mini-batch size: {batch_size}')
-
-    #print(U[0:batch_size,:].shape)
-    #print(V[:,0].shape)
 
     # Directly computing the triplets without using offline phase.
 
     Z = U[0:batch_size,:] @ V[:,0:1]
-    #print(Z.shape)
-    #print(Z)
-
     Z_prime = U[0:batch_size,:].transpose() @ V_prime[:,0:1]
 
     # Iterate over t mini-batches to compute Z and Z'
     for i in range(1, t):
         U_B_i = U[i*batch_size:i*batch_size+batch_size,]    # |B| x d
-        #print(f'Submatrix of U: \n {U_B_i}')
         V_i = V[:,i:i+1]                                    # d x t
         prod0 = U_B_i @ V_i
         Z = np.hstack((Z, prod0))                           # |B| x t
@@ -135,11 +124,6 @@ def mult_triples(n, d, t, l, batch_size=None):
 
     divisor = np.full(shape=Z_prime.shape, fill_value=2**l)
     Z_prime = np.mod(Z_prime, divisor)
-
-    #print(f'Shape of Z: {Z.shape}')
-    #print(f'Z: \n {Z}')
-    #print(f'Shape of Z\': {Z_prime.shape}')
-    #print(f'Z\': \n {Z_prime}')
 
     """
     We now have the actual triplets used for multiplication, but we need to define the secret shares of U, V, Z, V' and Z' and distribute them
@@ -181,7 +165,7 @@ def mult_triples(n, d, t, l, batch_size=None):
         C = LHE_MT(A0[i], B1[i], l, keys=(pk, sk))
         # We do the reshape because the vector is initially of shape (|B|,), but we want its shape to be (|B|,1)
         #   Otherwise, the hstack will not work.
-        # But apparently, we do not need it after all????? Python just decided that np should stop being retarded somehow?????
+        # But apparently, we do not need it after all????? Python just decided that np should stop doing it somehow?????
         new_var = np.hstack((A0B1[0], C[0])) # The first secret share of the product A0 x B1
         new_var1 = np.hstack((A0B1[1], C[1])) # The second secret share of the product A0 x B1
         A0B1 = (new_var, new_var1) # The secret shares of the product A0 x B1
@@ -228,22 +212,11 @@ def mult_triples(n, d, t, l, batch_size=None):
     # By now, the shares of Z' has been computed
 
     # Testing if gathering the shares compute to Z
-    print(f'Batch size: {batch_size}')
-    print(U0)
-    print(U0[0:batch_size,:])
-    print(f'U0.shape: {U0[0:batch_size,:].shape}')
-    print(f'V0.shape: {V0[:,0:1].shape}')
     assert U0.shape == U1.shape
     assert V0.shape == V0.shape
-    print(f'U x B: {(U0[0:batch_size,:] @ V0[:,0:1]).shape}')
-    print(f'A0B1[0].shape: {A0B1[0].shape}')
 
-    # TODO: Remember that shape of Z is actually |B| x t
-    print(f'len(A0): {len(A0)}')
-    print(f'len(A1): {len(A1)}')
-    print(f't: {t}')
+    # Remember that shape of Z is actually |B| x t
     for i in range(t):
-        print(f'Testing column {i}')
         term1 = A0[i] @ B0[i]
         term2 = (A0B1[0][:,i:i+1] + A0B1[1][:,i:i+1])
         term3 = (A1B0[0][:,i:i+1] + A1B0[1][:,i:i+1])
@@ -274,7 +247,7 @@ def mult_triples(n, d, t, l, batch_size=None):
     Z0 = np.mod(Z0, divisor)
     Z1 = np.mod(Z1, divisor)
     
-    #assert (Z[:,0:1] == np.mod(Z0 + Z1, divisor)).all() # If this passes, then I may assume that it will pass as well for the remaining columns.
+    assert (Z[:,0:1] == np.mod(Z0 + Z1, divisor)).all() # If this passes, then I may assume that it will pass as well for the remaining columns.
 
     for i in range(1,t):
         term01, term11 = share_matrix(A0[i] @ B0[i], l)

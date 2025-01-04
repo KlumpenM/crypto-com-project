@@ -21,7 +21,7 @@ if __name__ == "__main__":
             print(f"Running experiment n={n[i]}, d={d[i]}...")
             start_time = time.time()
             t = n[i] // batch_size
-            #mult_triples(n=n[i], d=d[j], t=t, l=l, batch_size=batch_size)
+            mult_triples(n=n[i], d=d[j], t=t, l=l, batch_size=batch_size)
             end_time = time.time()
             running_time = end_time - start_time
             f.write(f"Time: {running_time}\n\n")
