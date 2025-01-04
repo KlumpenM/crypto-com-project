@@ -26,4 +26,5 @@ if __name__ == "__main__":
             running_time = end_time - start_time
             f.write(f"Time: {running_time}\n\n")
             f.close()
+    print(f"Experiment finished. See {file_name} for results")
     
