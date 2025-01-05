@@ -96,11 +96,18 @@ def mult_triples(n, d, t, l, batch_size=None):
 
     if batch_size == None:
         batch_size = int(np.floor(n / t))
+    
+    group = 2**l
 
     # Generate the random matrices U, V and V_prime
-    U = np.random.randint(low=2**l, high=None, size=(n, d))
-    V = np.random.randint(low=2**l, high=None, size=(d, t))
-    V_prime = np.random.randint(low=2**l, high=None, size=(batch_size, t))
+    random_state = gmpy2.random_state()
+    U = np.array([[gmpy2.mpz_urandomb(random_state, l) for _ in range(d)] for _ in range(n)], dtype=object)
+    V = np.array([[gmpy2.mpz_urandomb(random_state, l) for _ in range(t)] for _ in range(d)], dtype=object)
+    V_prime = np.array([[gmpy2.mpz_urandomb(random_state, l) for _ in range(t)] for _ in range(batch_size)], dtype=object)
+    #U = np.random.randint(low=2**l, high=None, size=(n, d))
+    #V = np.random.randint(low=2**l, high=None, size=(d, t))
+    #V_prime = np.random.randint(low=2**l, high=None, size=(batch_size, t))
+    print("FUCK THE WORLD")
 
     # Directly computing the triplets without using offline phase.
 
@@ -325,7 +332,10 @@ def share_matrix(M, l):
     Tuple of matrices of same shape as M, also being the secret shares of M
     """
     r, c = M.shape
-    M0 = np.random.randint(low=2**l, high=None, size=(r, c))
+    
+    random_state = gmpy2.random_state()
+    M0 = np.array([[gmpy2.mpz_urandomb(random_state, l) for _ in range(c)] for _ in range(r)], dtype=object)
+    #M0 = np.random.randint(low=2**l, high=None, size=(r, c))
     M1 = np.subtract(M, M0)
     divisor = np.full(shape=(r, c), fill_value=2**l)
     M1 = np.mod(M1, divisor)
